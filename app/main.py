@@ -1,5 +1,8 @@
+from __future__ import annotations
+
+
 class Animal:
-    alive = []
+    alive: list[Animal] = []
 
     def __init__(
             self,
@@ -8,38 +11,21 @@ class Animal:
             hidden: bool = False
     ) -> None:
         self.name = name
-        self._health = health
+        self.health = health
         self.hidden = hidden
+        if self.health > 0:
+            Animal.alive.append(self)
 
-        Animal.alive.append(self)
-
-    def __str__(self) -> str:
-        return (
-            "{"
-            f"Name: {self.name}, "
-            f"Health: {self.health}, "
-            f"Hidden: {self.hidden}"
-            "}"
-        )
-
-    def __repr__(self) -> str:
-        return str(self)
-
-    @property
-    def health(self) -> int:
-        return self._health
-
-    @health.setter
-    def health(
-            self,
-            new_health: int
-    ) -> None:
-        if new_health > 0:
-            self._health = new_health
-        else:
-            self._health = 0
+    def die(self) -> None:
+        if self.health <= 0:
             if self in Animal.alive:
                 Animal.alive.remove(self)
+
+    def __repr__(self) -> str:
+
+        return (f"{{Name: {self.name}, "
+                f"Health: {self.health}, "
+                f"Hidden: {self.hidden}}}")
 
 
 class Herbivore(Animal):
@@ -48,8 +34,8 @@ class Herbivore(Animal):
 
 
 class Carnivore(Animal):
-    @staticmethod
-    def bite(other: Herbivore) -> None:
-        if isinstance(other, Herbivore):
-            if not other.hidden and other in Animal.alive:
-                other.health -= 50
+    def bite(self, target: Animal) -> None:
+        if isinstance(target, Herbivore) and not target.hidden:
+            target.health -= 50
+            if target.health <= 0:
+                target.die()
